@@ -24,7 +24,6 @@ public class GroupChatServerHandler extends SimpleChannelInboundHandler<String> 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
-
     //handlerAdded 表示连接建立，一旦连接，第一个被执行
     //将当前channel 加入到  channelGroup
     @Override
@@ -63,9 +62,18 @@ public class GroupChatServerHandler extends SimpleChannelInboundHandler<String> 
         System.out.println(ctx.channel().remoteAddress() + " 离线了~");
     }
 
+    //读取数据  ,转发数据给其他客户端
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+        Channel channel = ctx.channel();
 
+        channelGroup.forEach(ch -> {
+            if (channel != ch) {//不是当前的channel,转发消息
+                ch.writeAndFlush("[客户]" + channel.remoteAddress() + " 发送了消息" + msg + "\n");
+            } else {
+                ch.writeAndFlush("[自己]发送了消息" + msg + "\n");
+            }
+        });
     }
 
     @Override
